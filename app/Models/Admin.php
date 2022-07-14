@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Http\Middleware\Authenticate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class Admin extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
@@ -20,13 +21,15 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
 
+     protected $table='admins';
+     protected $guard='admin-api';
+     public $timestamps=true;
+
     protected $fillable = [
         'firstname',
         'lastname',
         'username',
-        'phone',
         'gender',
-        'address',
         'email',
         'password',
     ];
@@ -41,14 +44,14 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    // /**
+    //  * The attributes that should be cast.
+    //  *
+    //  * @var array<string, string>
+    //  */
+    // protected $casts = [
+    //     'email_verified_at' => 'datetime',
+    // ];
 
     // public function role(){
     //     return $this->hasOne(Role::class);
@@ -69,5 +72,4 @@ class User extends Authenticatable implements JWTSubject
     public function post(){
         return $this->hasMany(Post::class,'created_by');
     }
-
 }

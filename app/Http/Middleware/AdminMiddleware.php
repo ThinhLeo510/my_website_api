@@ -16,6 +16,13 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        if (auth('admin-api')->check() == false) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
         return $next($request);
     }
 }
