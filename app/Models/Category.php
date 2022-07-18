@@ -12,7 +12,7 @@ class Category extends Model
     use SoftDeletes;
 
     protected $table='category';
-    protected $timestamps= true;
+    public $timestamps= true;
     public $fillable=[
         'name'
     ];
@@ -21,5 +21,5 @@ class Category extends Model
         return $this->hasMany(Product::class,'category_id');
     }
 
-    
+
 }

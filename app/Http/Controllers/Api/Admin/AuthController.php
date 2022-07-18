@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Admin;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -20,10 +21,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        // $this->middleware('api', ['except' => ['login']]);
-        // $this->middleware('jwt.verify', ['except' => ['login', 'register']]);
-        $this->middleware('authAdmin', ['except' => ['login', 'register']]);
 
+        $this->middleware('authAdmin', ['except' => ['login', 'register']]);
     }
 
     /**
@@ -47,8 +46,8 @@ class AuthController extends Controller
             // lấy thông tin từ các request gửi lên
             $credentials = $request->only('email', 'password');
             // if (!$token = auth()->attempt($validator->validated(), false)) {
-                // $token = auth()->attempt($credentials);
-                // dd($token);
+            // $token = auth()->attempt($credentials);
+            // dd($token);
             if (!$token = auth('admin-api')->attempt($credentials)) {
                 return response()->json([
                     'response' => 'error',
@@ -88,18 +87,16 @@ class AuthController extends Controller
             'password' => bcrypt($request->password)
         ]);
 
-        if($admin){
+        if ($admin) {
             return response()->json([
-                'message' => 'Created user successfully',
+                'message' => 'Created admin successfully',
                 'data' => $admin,
             ], 200);
-        }else{
+        } else {
             return response()->json([
-                'error'=>'register failed'
-            ],400);
+                'error' => 'register failed'
+            ], 400);
         }
-
-
     }
 
     // dang xuat
@@ -115,17 +112,16 @@ class AuthController extends Controller
     // get user profile
     public function adminProfile(Request $request)
     {
-
-            return response()->json([
-                'status' => true,
-                'data' => auth('admin-api')->user(),
-            ], 200);
-
+        return response()->json([
+            'status' => true,
+            'data' => auth('admin-api')->user(),
+        ], 200);
     }
 
-    public function deleteAdmin($id){
+    public function deleteAdmin($id)
+    {
 
-        $admin= Admin::find($id);
+        $admin = Admin::find($id);
         if ($admin) {
             $admin->delete();
             return response()->json([
@@ -138,9 +134,10 @@ class AuthController extends Controller
         }
     }
 
-    public function restoreAdmin($id){
-        $admin=Admin::withTrashed()->find($id);
-        if($admin){
+    public function restoreAdmin($id)
+    {
+        $admin = Admin::onlyTrashed()->find($id);
+        if ($admin) {
             $admin->restore();
             return response()->json([
                 'message' => 'Restored admin successfully',
@@ -154,11 +151,11 @@ class AuthController extends Controller
 
     public function findPostByAdmin($id)
     {
-            $post = Admin::find($id)->posts;
-            return response()->json([
-                'message' => 'Successfully logged out',
-                'data' => $post
-            ], 200);
+        $post = Admin::find($id)->posts;
+        return response()->json([
+            'message' => 'Successfully logged out',
+            'data' => $post
+        ], 200);
     }
 
     // tao moi token khi token cũ het han
@@ -177,5 +174,15 @@ class AuthController extends Controller
         ]);
     }
 
-   
+
+
+    public function getListPostbyIdAdmin($id)
+    {
+        $post = Admin::find($id)->post;
+        if ($post) {
+            return response()->json([
+                'data' => $post
+            ], 200);
+        }
+    }
 }

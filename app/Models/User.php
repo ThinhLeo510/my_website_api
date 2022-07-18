@@ -66,8 +66,8 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function post(){
-        return $this->hasMany(Post::class,'created_by');
-    }
+    // public function post(){
+    //     return $this->hasMany(Post::class,'created_by');
+    // }
 
 }

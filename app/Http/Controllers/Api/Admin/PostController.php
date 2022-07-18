@@ -147,26 +147,18 @@ class PostController extends Controller
         }
     }
 
-    public function getListPostDeleted(){
+    public function getListPostDeleted()
+    {
 
-        $postDeleted=Post::onlyTrashed()->get();
-        if($postDeleted){
+        $postDeleted = Post::onlyTrashed()->get();
+        if ($postDeleted) {
             return response()->json([
-                'data'=>$postDeleted
-            ],200);
-        }else{
-            return response()->json([
-                'data'=>'nothing to show'
-            ]);
-        }
-    }
-
-    public function getListPostbyIdAdmin($id){
-        $post=Admin::find($id)->post;
-        if($post){
-            return response()->json([
-                'data'=>$post
+                'data' => $postDeleted
             ], 200);
+        } else {
+            return response()->json([
+                'data' => 'nothing to show'
+            ]);
         }
     }
 }

@@ -12,7 +12,7 @@ class Product extends Model
     use SoftDeletes;
 
     protected $table='products';
-    protected $timestamps= true;
+    public $timestamps= true;
     protected $fillable=[
         'name',
         'category_id',
@@ -27,7 +27,7 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    
+
 
 
 

@@ -16,6 +16,12 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        if (auth('user-api')->check() == false) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
         return $next($request);
     }
 }
