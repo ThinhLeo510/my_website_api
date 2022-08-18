@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Admin;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -41,7 +42,10 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json([
+                'code' => config('apiconst.VALIDATE_ERROR'),
+                'error' => $validator->errors()->first()
+            ]);
         } else {
             // lấy thông tin từ các request gửi lên
             $credentials = $request->only('email', 'password');
@@ -50,13 +54,14 @@ class AuthController extends Controller
             // dd($token);
             if (!$token = auth('admin-api')->attempt($credentials)) {
                 return response()->json([
-                    'response' => 'error',
-                    'message' => 'invalid_email_or_password',
+                    'code' => config('apiconst.INVALIED'),
+                    'error' => 'invalid email or password',
                 ], 400);
             } else {
                 return response()->json([
-                    'response' => 'success',
-                    'token' => $token
+                    'code' => config('apiconst.API_OK'),
+                    'token' => $token,
+                    'admin' => auth('admin-api')->user()
 
                 ], 200);
             }
@@ -70,12 +75,15 @@ class AuthController extends Controller
         // validate
         $validator = Validator::make($request->all(), [
             'username' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:admins'],
-            'password' => ['required', 'string', 'min:6'],
+            'email' => ['required', 'email', 'max:255', 'unique:admins'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->all()], 400);
+            return response()->json([
+                'code' => config('apiconst.VALIDATE_ERROR'),
+                'error' => $validator->errors()->first()
+            ]);
         }
 
         $admin = Admin::create([
@@ -89,11 +97,12 @@ class AuthController extends Controller
 
         if ($admin) {
             return response()->json([
-                'message' => 'Created admin successfully',
+                'code' => config('apiconst.API_OK'),
                 'data' => $admin,
             ], 200);
         } else {
             return response()->json([
+                'code'=>config('apiconst.SERVER_ERROR'),
                 'error' => 'register failed'
             ], 400);
         }
@@ -109,6 +118,42 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function updateAdmin(Request $request,$id){
+        $validator = Validator::make($request->all(), [
+            'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'username' => ['required', 'string', 'max:255','unique:admins','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'error' => $validator->errors()->first()
+            ]);
+        }
+
+        $admin = Admin::find($id);
+        if ($admin) {
+            $admin->lastname=$request->lastname;
+            $admin->firstname=$request->firstname;
+            $admin->username=$request->username;
+            $admin->save();
+            return response()->json([
+                'code'=>config('apiconst.API_OK'),
+                'message' => 'Update infor admin successfully',
+                'admin'=>$admin
+            ]);
+        } else {
+            return response()->json([
+                'code'=>config('apiconst.INVALIED'),
+                'message' => 'Data not found',
+            ]);
+        }
+
+
+    }
+
     // get user profile
     public function adminProfile(Request $request)
     {
@@ -118,6 +163,22 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function adminProfileById($id){
+        $admin = Admin::find($id);
+        if ($admin) {
+            return response()->json([
+                'code'=>config('apiconst.API_OK'),
+                'message' => 'Get infor admin successfully',
+                'admin'=>$admin
+            ]);
+        } else {
+            return response()->json([
+                'code'=>config('apiconst.INVALIED'),
+                'message' => 'Data not found',
+            ]);
+        }
+    }
+
     public function deleteAdmin($id)
     {
 
@@ -125,10 +186,12 @@ class AuthController extends Controller
         if ($admin) {
             $admin->delete();
             return response()->json([
+                'code'=>config('apiconst.API_OK'),
                 'message' => 'Deleted admin successfully',
             ], 200);
         } else {
             return response()->json([
+                'code'=>config('apiconst.INVALIED'),
                 'message' => 'Data not found',
             ]);
         }
@@ -144,6 +207,23 @@ class AuthController extends Controller
             ], 200);
         } else {
             return response()->json([
+                'message' => 'Data not found',
+            ]);
+        }
+    }
+
+    public function resetPassword($id){
+        $admin = Admin::find($id);
+        if ($admin) {
+            $admin->password=bcrypt(config('apiconst.DEFAULT_PASSWORD'));
+            $admin->save();
+            return response()->json([
+                'code'=>config('apiconst.API_OK'),
+                'message' => 'Reset password admin successfully',
+            ], 200);
+        } else {
+            return response()->json([
+                'code'=>config('apiconst.INVALIED'),
                 'message' => 'Data not found',
             ]);
         }
@@ -184,5 +264,19 @@ class AuthController extends Controller
                 'data' => $post
             ], 200);
         }
+    }
+
+    public function getListAdmin()
+    {
+
+        return response()->json([
+            'code' => config('apiconst.API_OK'),
+            'admin'=>Admin::all()
+        ]);
+    }
+
+    public function getListUser()
+    {
+        return User::all();
     }
 }

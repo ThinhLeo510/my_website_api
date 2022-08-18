@@ -35,6 +35,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 
 // category
 Route::get('/category', [CategoryController::class, 'index']);
+Route::get('/category/list', [CategoryController::class, 'list']);
 Route::get('/category/{id}', [CategoryController::class, 'show']);
 Route::get('/category/{id}/products',[CategoryController::class,'listProductFromCateId']);
 
@@ -47,10 +48,16 @@ Route::prefix('admin')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('login')->withoutMiddleware('authAdmin');
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/listAdmin',[AuthController::class,'getListAdmin']);
         Route::get('/profile', [AuthController::class, 'adminProfile']);
+        Route::get('/profile/{id}',[AuthController::class,'adminProfileById']);
+        Route::put('/update/{id}',[AuthController::class,'updateAdmin']);
         Route::delete('/{id}', [AuthController::class, 'deleteAdmin']);
         Route::put('/{id}/restore', [AuthController::class, 'restoreAdmin']);
         Route::get('/{id}/posts', [AuthController::class, 'getListPostbyIdAdmin']);
+        Route::put('/reset-password/{id}',[AuthController::class,'resetPassword']);
+
+        Route::get('/listUser',[AuthController::class,'getListUser']);
 
         Route::resource('posts', PostController::class);
         Route::put('/posts/{id}/restore', [PostController::class, 'restore']);

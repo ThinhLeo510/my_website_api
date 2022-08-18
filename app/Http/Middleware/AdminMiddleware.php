@@ -18,8 +18,8 @@ class AdminMiddleware
     {
         if (auth('admin-api')->check() == false) {
             return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized'
+                'code' => config('apiconst.UNAUTHORIZED'),
+                'error' => 'Unauthorized'
             ], 401);
         }
 

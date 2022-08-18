@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class AuthController extends Controller
             $credentials = $request->only('email', 'password');
 
             // if (!$token = auth()->attempt($validator->validated(), false)) {
-            if (!$token = auth('admin-api')->attempt($credentials)) {
+            if (!$token = auth('user-api')->attempt($credentials)) {
                 return response()->json([
                     'response' => 'error',
                     'message' => 'invalid_email_or_password',
@@ -56,7 +57,8 @@ class AuthController extends Controller
             } else {
                 return response()->json([
                     'response' => 'success',
-                    'token' => $token
+                    'token' => $token,
+                    'user'=>auth('user-api')->user()
 
                 ], 200);
             }
@@ -102,6 +104,7 @@ class AuthController extends Controller
 
         auth('admin-api')->logout();
         return response()->json([
+            'status'=> true,
             'message' => 'Successfully logged out'
         ], 200);
     }

@@ -30,7 +30,10 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json([
+                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'error' => $validator->errors()->first()
+            ]);
         } else {
             // lấy thông tin từ các request gửi lên
             $credentials = $request->only('email', 'password');
@@ -39,13 +42,15 @@ class UserController extends Controller
             // dd($token);
             if (!$token = auth('user-api')->attempt($credentials)) {
                 return response()->json([
-                    'response' => 'error',
-                    'message' => 'invalid_email_or_password',
+                    'code'=>config('apiconst.INVALIED'),
+                    'error' => 'invalid email or password',
                 ], 400);
             } else {
                 return response()->json([
+                    'code'=>config('apiconst.API_OK'),
                     'response' => 'success',
-                    'token' => $token
+                    'token' => $token,
+                    'user'=>auth('user-api')->user()
 
                 ], 200);
             }
@@ -63,18 +68,21 @@ class UserController extends Controller
         //create a new user
          // validate
          $validator = Validator::make($request->all(), [
-            'firstname'=>['required','string','max:255','regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
-            'lastname'=>['required','string','max:255','regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
+            'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'username' => ['required', 'string', 'max:255','unique:users','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
             'gender' => ['required', 'numeric', 'min:1'],
             'address' => ['required', 'string'],
             'phone'=>['required','string','regex:/(0)[0-9]{9}/','unique:users'],
-            'username' => ['required', 'string', 'max:255','unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6'],
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->all()], 400);
+            return response()->json([
+                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'error' => $validator->errors()->first()
+            ]);
         }
 
         $user = User::create([
@@ -90,11 +98,13 @@ class UserController extends Controller
 
         if ($user) {
             return response()->json([
+                'code'=>config('apiconst.API_OK'),
                 'message' => 'Created user successfully',
                 'data' => $user,
             ], 200);
         } else {
             return response()->json([
+                'code'=>config('apiconst.SERVER_ERROR'),
                 'error' => 'register failed'
             ], 400);
         }
@@ -105,6 +115,7 @@ class UserController extends Controller
 
         auth('user-api')->logout();
         return response()->json([
+            'status' => true,
             'message' => 'Successfully logged out'
         ], 200);
     }
