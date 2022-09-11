@@ -18,9 +18,9 @@ class UserMiddleware
     {
         if (auth('user-api')->check() == false) {
             return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized'
-            ], 401);
+                'code' => config('apiconst.UNAUTHORIZED'),
+                'error' => 'Unauthorized'
+            ],401);
         }
         return $next($request);
     }

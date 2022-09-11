@@ -20,6 +20,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
 
+    public $timestamps = true;
     protected $fillable = [
         'firstname',
         'lastname',
@@ -69,5 +70,9 @@ class User extends Authenticatable implements JWTSubject
     // public function post(){
     //     return $this->hasMany(Post::class,'created_by');
     // }
+
+    public function cart(){
+        return $this->hasMany(Cart::class,'user_id');
+    }
 
 }

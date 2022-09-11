@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
+// use App\Models\Admin;
 use App\Models\Post;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
+// use Illuminate\Database\Eloquent\Collection;
 
 class PostController extends Controller
 {
@@ -18,6 +19,7 @@ class PostController extends Controller
      */
     public function index()
     {
+        
         return Post::all();
     }
 

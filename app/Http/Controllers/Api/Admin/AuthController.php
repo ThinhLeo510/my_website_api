@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Admin;
 use App\Models\Post;
 use App\Models\User;
+use Exception;
+use Hamcrest\Type\IsNumeric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -35,36 +38,39 @@ class AuthController extends Controller
     public function login(Request $request)
     {
 
-        $validator = Validator::make($request->all(), [
-
-            'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:6',]
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => config('apiconst.VALIDATE_ERROR'),
-                'error' => $validator->errors()->first()
+        try {
+            $validator = Validator::make($request->all(), [
+                'email' => ['required', 'email', 'max:255'],
+                'password' => ['required', 'string', 'min:6',]
             ]);
-        } else {
-            // lấy thông tin từ các request gửi lên
-            $credentials = $request->only('email', 'password');
-            // if (!$token = auth()->attempt($validator->validated(), false)) {
-            // $token = auth()->attempt($credentials);
-            // dd($token);
-            if (!$token = auth('admin-api')->attempt($credentials)) {
+    
+            if ($validator->fails()) {
                 return response()->json([
-                    'code' => config('apiconst.INVALIED'),
-                    'error' => 'invalid email or password',
-                ], 400);
+                    'code' => config('apiconst.VALIDATE_ERROR'),
+                    'error' => $validator->errors()->first()
+                ]);
             } else {
-                return response()->json([
-                    'code' => config('apiconst.API_OK'),
-                    'token' => $token,
-                    'admin' => auth('admin-api')->user()
-
-                ], 200);
+                // lấy thông tin từ các request gửi lên
+                $credentials = $request->only('email', 'password');
+                // if (!$token = auth()->attempt($validator->validated(), false)) {
+                // $token = auth()->attempt($credentials);
+                // dd($token);
+                if (!$token = auth('admin-api')->attempt($credentials)) {
+                    return response()->json([
+                        'code' => config('apiconst.INVALIED'),
+                        'error' => 'invalid email or password',
+                    ], 400);
+                } else {
+                    return response()->json([
+                        'code' => config('apiconst.API_OK'),
+                        'token' => $token,
+                        'admin' => auth('admin-api')->user()
+    
+                    ], 200);
+                }
             }
+        } catch (Exception $e) {
+            return $e;
         }
     }
 
@@ -74,15 +80,33 @@ class AuthController extends Controller
     {
         // validate
         $validator = Validator::make($request->all(), [
-            'username' => ['required', 'string', 'max:255'],
+            'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'username' => ['required', 'string', 'max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
             'email' => ['required', 'email', 'max:255', 'unique:admins'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => ['required', 'string', 'min:6'],
+            'password_confirmation' => ['required','same:password']
+        ],[
+            'firstname.required'=> 'Vui lòng nhập tên!',
+            'firstname.string'=>'Tên không đúng định dạng! Vui lòng nhập lại',
+            'firstname.regex'=>'Tên không đúng định dạng! Vui lòng nhập lại',
+            'lastname.required' => 'Vui lòng nhập họ và tên đệm!',
+            'lastname.regex'=> 'Họ và tên đệm không đúng định dạng! Vui lòng nhập lại',
+            'username.required' => 'Vui lòng nhập tên tài khoản',
+            'username.regex'=> "Tên tài khoản không đúng định định dạng! Vui lòng nhập lại.",
+            'email.required'=> 'Vui lòng nhập email!',
+            'email.unique' => 'Email đã tồn tại! VUi lòng chọn email khác. ',
+            'email.email'=> 'Email không đúng định dạng! Vui lòng nhập lại.',
+            'password.required' => 'Vui lòng nhập mật khẩu',
+            'password.min'=> 'Mật khẩu ít nhất 6 kí tự',
+            // 'password.confirmed' => 'Vui lòng nhập xác nhận mật khẩu giống với mật khẩu ban đầu.'
+            'password_confirmation.same' =>'Vui lòng nhập xác nhận mật khẩu giống với mật khẩu'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'code' => config('apiconst.VALIDATE_ERROR'),
-                'error' => $validator->errors()->first()
+                'error' => $validator->errors(),
             ]);
         }
 
@@ -111,7 +135,6 @@ class AuthController extends Controller
     // dang xuat
     public function logout()
     {
-
         auth('admin-api')->logout();
         return response()->json([
             'message' => 'Successfully logged out'
@@ -122,14 +145,13 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
             'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
-            'username' => ['required', 'string', 'max:255','unique:admins','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
+            'username' => ['required', 'string', 'max:255','unique:admins,username,'.$id.',id','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
 
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'code'=>config('apiconst.VALIDATE_ERROR'),
-                'error' => $validator->errors()->first()
+                'error' => $validator->errors(),
             ]);
         }
 
@@ -267,12 +289,52 @@ class AuthController extends Controller
     }
 
     public function getListAdmin()
-    {
+    {   
+        // $admin=Admin::paginate(4);
+        // dd($admin);
 
         return response()->json([
             'code' => config('apiconst.API_OK'),
             'admin'=>Admin::all()
         ]);
+    }
+
+    public function listAdminPaginate($page){
+        $count = DB::table('admins')->count();
+        // dd($page);
+        if(!isset($page)){
+            $page=1;
+        }
+        //item tren moi trang
+        $itemPerPage=5;
+        //lam tron len so trang toi dang da chia
+        $maxPage=ceil($count /$itemPerPage);
+        ///kiem tra param la so , 0< page <= maxPage
+        if(is_numeric($page) && $page>0 && $page<=$maxPage){
+            $offset= ($page-1)*$itemPerPage;
+            $data= DB::table('admins')->offset($offset)->limit($itemPerPage)->get();
+            //loai bo password
+            for($i=0;$i<count($data);$i++){
+                $data[$i]->password='';
+            }
+            
+            return response()->json([
+                'code' => config('apiconst.API_OK'),
+                'admin'=>$data,
+                'perPage'=> $itemPerPage,
+                'pageCurrent'=> $page,
+                'maxPage' => $maxPage,
+                'count'=>$count,
+                
+            ]);
+        }
+        return response()->json([
+            'code' => config('apiconst.SERVER_ERROR'),
+            'message'=>"Page not found",
+            // 'count'=>$count,
+            
+        ]);
+        
     }
 
     public function getListUser()

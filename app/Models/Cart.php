@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Cart extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
 
     protected $table='carts';
-    protected $timestamps=true;
+    // public $timestamps=true;
     protected $fillable=[
         'user_id',
         'product_id',
+        'product_price',
         'quantity',
         'price_total'
     ];
@@ -28,6 +29,13 @@ class Cart extends Model
     //     return $this->hasMany(Product::class);
     // }
 
+    public function user(){
+        return $this->belongsTo(User::class,'id');
+    }
+
+    public function product(){
+        return $this->hasMany(Product::class);
+    }
 
 
 }

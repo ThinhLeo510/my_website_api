@@ -8,5 +8,6 @@
         'TOKEN_ERROR'=>3,
         'SERVER_ERROR'=>4,
         'INVALIED' =>5,
-        'DEFAULT_PASSWORD'=>123456
+        'DEFAULT_PASSWORD'=>123456,
+        'DATA_EMPTY' => 6
     ];

@@ -12,7 +12,7 @@ class Comment extends Model
     use SoftDeletes;
 
     protected $table='comments';
-    protected $timestamps= true;
+    public $timestamps= true;
     protected $fillable=[
         'product_id',
         'username',

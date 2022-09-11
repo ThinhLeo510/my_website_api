@@ -11,7 +11,7 @@ class Feedback extends Model
     use HasFactory;
     use SoftDeletes;
     protected $table='feedback';
-    protected $timestamps=true;
+    public $timestamps=true;
     protected $fillable=[
         'user_id',
         'product_id',

@@ -32,7 +32,7 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'code'=>config('apiconst.VALIDATE_ERROR'),
-                'error' => $validator->errors()->first()
+                'error' => $validator->errors()
             ]);
         } else {
             // lấy thông tin từ các request gửi lên
@@ -43,7 +43,7 @@ class UserController extends Controller
             if (!$token = auth('user-api')->attempt($credentials)) {
                 return response()->json([
                     'code'=>config('apiconst.INVALIED'),
-                    'error' => 'invalid email or password',
+                    'error' => 'Sai email hoặc mật khẩu. Vui lòng thử lại!',
                 ], 400);
             } else {
                 return response()->json([
@@ -121,10 +121,10 @@ class UserController extends Controller
     }
 
     // get user profile
-    public function userProfile(Request $request)
+    public function userProfile()
     {
         return response()->json([
-            'status' => true,
+            'code' => config('apiconst.API_OK'),
             'data' => auth('user-api')->user(),
         ], 200);
     }
@@ -141,10 +141,12 @@ class UserController extends Controller
         $user=User::find($id);
         if($user){
             return response()->json([
+                'code' => config('apiconst.API_OK'),
                 'data'=>$user
             ],200);
         }else{
             return response()->json([
+                'code' =>  config('apiconst.DATA_EMPTY'),
                 'message'=>'Data not found'
             ]);
         }
@@ -157,9 +159,46 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
-        //
+        // dd($request->all());
+        $validator = Validator::make($request->all(), [
+            'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'username' => ['required', 'string', 'max:255','unique:users,username,'.$id.',id','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
+            'address' => ['required', 'string'],
+            'phone'=>['required','string','max:10','regex:/(0)[0-9]{9}/','unique:users,phone,'.$id.',id'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id.',id'],
+            
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'error' => $validator->errors(),
+            ]);
+        }
+
+        $user = User::find($id);
+        if ($user) {
+            $user->lastname=$request->lastname;
+            $user->firstname=$request->firstname;
+            $user->username=$request->username;
+            $user->address=$request->address;
+            $user->email=$request->email;
+            $user->phone=$request->phone;
+            $user->save();
+            return response()->json([
+                'code'=>config('apiconst.API_OK'),
+                'message' => 'Update infor user successfully',
+                'user'=>$user
+            ]);
+        } else {
+            return response()->json([
+                'code'=>config('apiconst.INVALIED'),
+                'message' => 'Data not found',
+            ]);
+        }
     }
 
     /**

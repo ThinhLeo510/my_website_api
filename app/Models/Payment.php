@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Payment extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
 
     protected $table='payments';
-    protected $timestamps= true;
+
+    // public $timestamps= true;
+
     protected $fillable=[
-        'type',
         'name'
     ];
 

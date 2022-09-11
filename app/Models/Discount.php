@@ -11,7 +11,7 @@ class Discount extends Model
     use HasFactory;
     // use SoftDeletes;
     protected $table='discounts';
-    protected $timestamps=true;
+    public $timestamps=true;
     protected $fillable=[
         'code',
         'percent',

@@ -176,5 +176,7 @@ class CategoryController extends Controller
                 'message' => 'Data not found'
             ]);
         }
+
+        
     }
 }
