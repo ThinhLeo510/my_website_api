@@ -11,8 +11,10 @@ use App\Http\Controllers\Api\Admin\PaymentController;
 use App\Http\Controllers\Api\Admin\PostController;
 use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Admin\WishlistController;
 use App\Http\Controllers\UploadImageController;
 use App\Models\Category;
+use App\Models\Wishlist;
 
 /*
 |--------------------------------------------------------------------------
@@ -143,6 +145,12 @@ Route::prefix('user')->group(function () {
             Route::get('/{id}/listOrderDestroy/page/{page}',[OrderController::class,'listOrderDestroyUser']);
             Route::get('/{id}/listOrderComplete/page/{page}',[OrderController::class,'listOrderCompleteUser']);
             Route::get('/{id}/listOrderShipping/page/{page}',[OrderController::class,'listOrderShippingUser']);
+        });
+
+        Route::prefix('wishlist')->group(function(){
+            Route::get('/{user_id}',[WishlistController::class,'index']);
+            Route::post('/',[WishlistController::class,'addWishlist']);
+            Route::delete('/{id}',[WishlistController::class,'removeWishlist']);
         });
 
     });
