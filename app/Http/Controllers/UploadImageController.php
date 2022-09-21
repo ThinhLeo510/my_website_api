@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UploadImageController extends Controller
 {
-    public function uploadImagePrduct(Request $request){
+    public function uploadImageProduct(Request $request){
 
         
         if($request->hasFile('thumbnail')){

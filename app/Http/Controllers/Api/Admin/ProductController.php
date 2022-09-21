@@ -57,7 +57,7 @@ class ProductController extends Controller
         }catch(Exception $e){
             return response()->json([
                 'code' => config('apiconst.SERVER_ERROR'),
-                'message'=>$e,
+                'message'=>''.$e,
                 
             ]);
         }
@@ -114,7 +114,7 @@ class ProductController extends Controller
         }catch(Exception $e){
             return response()->json([
                 'code' => config('apiconst.SERVER_ERROR'),
-                'message'=>$e,
+                'message'=>''.$e,
                 
             ]);
         }
@@ -157,9 +157,12 @@ class ProductController extends Controller
                 ]);
             }
         }catch(Exception $e){
-            return $e;
+            return response()->json([
+                'code' => config('apiconst.SERVER_ERROR'),
+                'message'=>''.$e,                
+            ]);
         }
-                       
+        
     }
 
     public function store(Request $request)
@@ -227,18 +230,12 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-
         
-
         $product = Product::find($id);
         // dd($product);
         
         if ($product) {
-            // if($request->file('thumbnail')){
-            //     $file= $request->file('thumbnail');
-            //     $filename= date('YmdHi').$file->getClientOriginalName();
-            //     $file-> move(public_path('public/Image'), $filename);            
-            // }
+
             $uploadImage = new UploadImageController();
 
             try{
@@ -255,10 +252,9 @@ class ProductController extends Controller
             }catch(Exception $e){
                 return response()->json([
                     'code' => config('apiconst.SERVER_ERROR'),
-                    'message' => $e
+                    'message' => ''.$e
                 ]);
             }
-
 
             return response()->json([
                 'code' => config('apiconst.API_OK'),
