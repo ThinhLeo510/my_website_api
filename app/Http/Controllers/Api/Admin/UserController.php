@@ -22,19 +22,21 @@ class UserController extends Controller
         return User::all();
     }
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $validator = Validator::make($request->all(), [
 
             'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:6',]
+            'password' => ['required', 'string', 'min:6', ]
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'code' => config('apiconst.VALIDATE_ERROR'),
                 'error' => $validator->errors()
             ]);
-        } else {
+        }
+        else {
             // lấy thông tin từ các request gửi lên
             $credentials = $request->only('email', 'password');
             // if (!$token = auth()->attempt($validator->validated(), false)) {
@@ -42,15 +44,16 @@ class UserController extends Controller
             // dd($token);
             if (!$token = auth('user-api')->attempt($credentials)) {
                 return response()->json([
-                    'code'=>config('apiconst.INVALIED'),
+                    'code' => config('apiconst.INVALIED'),
                     'error' => 'Sai email hoặc mật khẩu. Vui lòng thử lại!',
                 ], 400);
-            } else {
+            }
+            else {
                 return response()->json([
-                    'code'=>config('apiconst.API_OK'),
+                    'code' => config('apiconst.API_OK'),
                     'response' => 'success',
                     'token' => $token,
-                    'user'=>auth('user-api')->user()
+                    'user' => auth('user-api')->user()
 
                 ], 200);
             }
@@ -66,21 +69,21 @@ class UserController extends Controller
     public function register(Request $request)
     {
         //create a new user
-         // validate
-         $validator = Validator::make($request->all(), [
-            'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
-            'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
-            'username' => ['required', 'string', 'max:255','unique:users','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
+        // validate
+        $validator = Validator::make($request->all(), [
+            'firstname' => ['required', 'string', 'max:255', 'regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'lastname' => ['required', 'string', 'max:255', 'regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'username' => ['required', 'string', 'max:255', 'unique:users', 'regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
             'gender' => ['required', 'numeric', 'min:1'],
             'address' => ['required', 'string'],
-            'phone'=>['required','string','regex:/(0)[0-9]{9}/','unique:users'],
+            'phone' => ['required', 'string', 'regex:/(0)[0-9]{9}/', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6'],
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'code' => config('apiconst.VALIDATE_ERROR'),
                 'error' => $validator->errors()->first()
             ]);
         }
@@ -89,8 +92,8 @@ class UserController extends Controller
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,
             'gender' => $request->gender,
-            'address'=>$request->address,
-            'phone'=>$request->phone,
+            'address' => $request->address,
+            'phone' => $request->phone,
             'username' => $request->username,
             'email' => $request->email,
             'password' => bcrypt($request->password)
@@ -98,13 +101,14 @@ class UserController extends Controller
 
         if ($user) {
             return response()->json([
-                'code'=>config('apiconst.API_OK'),
+                'code' => config('apiconst.API_OK'),
                 'message' => 'Created user successfully',
                 'data' => $user,
             ], 200);
-        } else {
+        }
+        else {
             return response()->json([
-                'code'=>config('apiconst.SERVER_ERROR'),
+                'code' => config('apiconst.SERVER_ERROR'),
                 'error' => 'register failed'
             ], 400);
         }
@@ -138,16 +142,17 @@ class UserController extends Controller
     public function show($id)
     {
         //
-        $user=User::find($id);
-        if($user){
+        $user = User::find($id);
+        if ($user) {
             return response()->json([
                 'code' => config('apiconst.API_OK'),
-                'data'=>$user
-            ],200);
-        }else{
+                'data' => $user
+            ], 200);
+        }
+        else {
             return response()->json([
-                'code' =>  config('apiconst.DATA_EMPTY'),
-                'message'=>'Data not found'
+                'code' => config('apiconst.DATA_EMPTY'),
+                'message' => 'Data not found'
             ]);
         }
     }
@@ -163,39 +168,40 @@ class UserController extends Controller
     {
         // dd($request->all());
         $validator = Validator::make($request->all(), [
-            'firstname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
-            'lastname'=>['required','string','max:255','regex:/^((?!\d)[\p{L} ]+)$/u'],
-            'username' => ['required', 'string', 'max:255','unique:users,username,'.$id.',id','regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
+            'firstname' => ['required', 'string', 'max:255', 'regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'lastname' => ['required', 'string', 'max:255', 'regex:/^((?!\d)[\p{L} ]+)$/u'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $id . ',id', 'regex:/^[A-Za-z0-9]+(?:[_][A-Za-z0-9]+)*$/'],
             'address' => ['required', 'string'],
-            'phone'=>['required','string','max:10','regex:/(0)[0-9]{9}/','unique:users,phone,'.$id.',id'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id.',id'],
-            
+            'phone' => ['required', 'string', 'max:10', 'regex:/(0)[0-9]{9}/', 'unique:users,phone,' . $id . ',id'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $id . ',id'],
+
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'code'=>config('apiconst.VALIDATE_ERROR'),
+                'code' => config('apiconst.VALIDATE_ERROR'),
                 'error' => $validator->errors(),
             ]);
         }
 
         $user = User::find($id);
         if ($user) {
-            $user->lastname=$request->lastname;
-            $user->firstname=$request->firstname;
-            $user->username=$request->username;
-            $user->address=$request->address;
-            $user->email=$request->email;
-            $user->phone=$request->phone;
+            $user->lastname = $request->lastname;
+            $user->firstname = $request->firstname;
+            $user->username = $request->username;
+            $user->address = $request->address;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
             $user->save();
             return response()->json([
-                'code'=>config('apiconst.API_OK'),
+                'code' => config('apiconst.API_OK'),
                 'message' => 'Update infor user successfully',
-                'user'=>$user
+                'user' => $user
             ]);
-        } else {
+        }
+        else {
             return response()->json([
-                'code'=>config('apiconst.INVALIED'),
+                'code' => config('apiconst.INVALIED'),
                 'message' => 'Data not found',
             ]);
         }
@@ -209,6 +215,6 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+    //
     }
 }

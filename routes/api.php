@@ -37,9 +37,13 @@ Route::resource('posts', PostController::class)->only(['index', 'show']);
 // product
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
+    Route::get('/testPaginate', [ProductController::class,'getListProduct']);
     Route::get('/page/{page}', [ProductController::class, 'listProducPaginate']);
     Route::get('/{id}', [ProductController::class, 'show']);
+    Route::get('/{slug}', [ProductController::class, 'getProductDetailSlug']);
     Route::get('/{id}/related-product', [ProductController::class, 'relatedProduct']);
+    // Route::get('/slug', [ProductController::class,'slug']);
+    Route::get('/trendy/all',[ProductController::class,'getListProductTrendy']);
 });
 
 Route::prefix('payment')->group(function () {
@@ -54,6 +58,8 @@ Route::prefix('category')->group(function () {
     // Route::get('/{id}/products',[CategoryController::class,'listProductFromCateId']);
     Route::get('/{id}/page/{page}', [ProductController::class, 'listProductCate']);
     // Route::get('/{id}/',[ProductController::class,'listProductCate']);
+    // Route::get('/slug', [CategoryController::class,'slug']);
+
 
 });
 

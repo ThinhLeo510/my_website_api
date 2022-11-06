@@ -2,17 +2,37 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-
+use App\Helper\Helper;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use Exception;
+use Hamcrest\Type\IsNumeric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
 
-    public function index(){
+    public function index()
+    {
         return Category::all();
+    }
+
+    // update slug all category
+    public function slug()
+    {
+        try {
+            // dd(1);
+            $list = Category::all();
+            foreach ($list as $key => $cate) {
+                // dd($cate->name);
+                $cate->slug = Str::slug($cate->name);
+                $cate->save();
+            }
+        } catch (Exception $e) {
+            return Helper::responseData(config('apiconst.SERVER_ERROR'), '' . $e);
+        }
     }
 
     //get list category method GET
@@ -29,7 +49,7 @@ class CategoryController extends Controller
                 'name' => $category->name,
                 'parent_id' => $category->parent_id,
                 // 'item_count' => $category->item_count,
-                'parent_name'=>null,
+                'parent_name' => null,
                 'level' => $category->level,
             ];
             $first_child_categories = Category::where('parent_id', $category->id)->get();
@@ -39,7 +59,7 @@ class CategoryController extends Controller
                     'name' => $first_category->name,
                     'parent_id' => $first_category->parent_id,
                     // 'item_count' => $first_category->item_count,
-                    'parent_name'=>$category->name,
+                    'parent_name' => $category->name,
                     'level' => $first_category->level,
                 ];
                 $second_child_category = Category::where('parent_id', $first_category->id)->get();
@@ -48,7 +68,7 @@ class CategoryController extends Controller
                         'id' => $second_category->id,
                         'name' => $second_category->name,
                         'parent_id' => $second_category->parent_id,
-                        'parent_name'=>$first_category->name,
+                        'parent_name' => $first_category->name,
                         // 'item_count' => $second_category->item_count,
                         'level' => $second_category->level,
                     ];
@@ -57,18 +77,25 @@ class CategoryController extends Controller
         }
         return response()->json([
             'status' => config('apiconst.API_OK'),
-            'data'=>$response
+            'data' => $response
         ]);
     }
 
+
+
     // show 1 category method GET
-    public function show($id)
+    public function show($idOrSlug)
     {
-        $cate = Category::find($id);
+        if(is_numeric($idOrSlug)){
+            $cate = Category::find($idOrSlug);
+        }else if(is_string($idOrSlug)){
+            $cate= Category::where('slug',$idOrSlug)->first();
+        }else{
+            return Helper::responseData(config('apiconst.INVALIED'),config('apiconst.MESS_INVALIED_PARAM'));
+        }
+
         if ($cate) {
-            return response()->json([
-                'data' => $cate
-            ], 200);
+            return Helper::responseData(config('apiconst.API_OK'),config('apiconst.MESS_OK'),$cate);
         } else {
             return response()->json([
                 'message' => 'Data not found'
@@ -81,7 +108,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'unique:category'],
-            'parent_id'=>['numeric','nullable']
+            'parent_id' => ['numeric', 'nullable']
         ]);
 
         if ($validator->failed()) {
@@ -90,7 +117,7 @@ class CategoryController extends Controller
 
         $cate = Category::create([
             'name' => $request->name,
-            'parent_id'=> $request->parent_id
+            'parent_id' => $request->parent_id
         ]);
 
         if ($cate) {
@@ -176,7 +203,5 @@ class CategoryController extends Controller
                 'message' => 'Data not found'
             ]);
         }
-
-        
     }
 }
