@@ -37,13 +37,12 @@ class AuthController extends Controller
     // dang nhap
     public function login(Request $request)
     {
-
         try {
             $validator = Validator::make($request->all(), [
                 'email' => ['required', 'email', 'max:255'],
                 'password' => ['required', 'string', 'min:6',]
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'code' => config('apiconst.VALIDATE_ERROR'),
@@ -65,7 +64,7 @@ class AuthController extends Controller
                         'code' => config('apiconst.API_OK'),
                         'token' => $token,
                         'admin' => auth('admin-api')->user()
-    
+
                     ], 200);
                 }
             }
@@ -289,7 +288,7 @@ class AuthController extends Controller
     }
 
     public function getListAdmin()
-    {   
+    {
         // $admin=Admin::paginate(4);
         // dd($admin);
 
@@ -317,7 +316,7 @@ class AuthController extends Controller
             for($i=0;$i<count($data);$i++){
                 $data[$i]->password='';
             }
-            
+
             return response()->json([
                 'code' => config('apiconst.API_OK'),
                 'admin'=>$data,
@@ -325,16 +324,16 @@ class AuthController extends Controller
                 'pageCurrent'=> $page,
                 'maxPage' => $maxPage,
                 'count'=>$count,
-                
+
             ]);
         }
         return response()->json([
             'code' => config('apiconst.SERVER_ERROR'),
             'message'=>"Page not found",
             // 'count'=>$count,
-            
+
         ]);
-        
+
     }
 
     public function getListUser()
